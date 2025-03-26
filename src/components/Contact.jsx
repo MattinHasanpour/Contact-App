@@ -6,6 +6,10 @@ import ContactsList from "./ContactsList";
 
 import { inputs } from "../constants/input";
 
+import styles from "./Contacts.module.css";
+
+import { v4 } from "uuid";
+
 const Button = styled.button`
   width: 90%;
   margin: 10px 30px;
@@ -19,6 +23,7 @@ function Contact() {
   const [contacts, setContacts] = useState([]);
   const [alert, setAlert] = useState("");
   const [contact, setContact] = useState({
+    id: "",
     name: "",
     lastName: "",
     email: "",
@@ -39,46 +44,48 @@ function Contact() {
       !contact.email ||
       !contact.phone
     ) {
-      setAlert("Please enter valid data");
+      setAlert("Please enter valid data ❌");
       return;
     }
-    setAlert("");
-    setContacts((contacts) => [...contacts, contact]);
+
+    const newContact = { ...contact, id: v4() };
+    setContacts((contacts) => [...contacts, newContact]);
     setContact({
       name: "",
       lastName: "",
       email: "",
       phone: "",
     });
+    setTimeout(() => setAlert(""), 2000);
   };
+
+  const deleteHandler = (id) => {
+    const newContacts = contacts.filter((contact) => contact.id !== id);
+    setContacts(newContacts);
+  };
+
   return (
-    <>
-      <div className="bg-white border border-gray-300">
-        {inputs.map((input) => (
+    <div className={styles.container}>
+      <div className={styles.form}>
+        {inputs.map((input, index) => (
           <input
-            key={input.name}
+            key={index}
             type={input.type}
             name={input.name}
             placeholder={input.placeholder}
             value={contact[input.name]}
-            className="border border-gray-300 rounded-md px-3 w-72"
             onChange={changeHandler}
           />
         ))}
 
-        <Button
-          onClick={addHandler}
-          className="bg-blue-700 text-white rounded-md py-2"
-        >
-          Add Contact
-        </Button>
+        <Button onClick={addHandler}>Add Contact</Button>
       </div>
-      <Alert className="text-red-600 bg-red-200 p-3 m-3 text-center">
-        {" "}
-        {alert}{" "}
-      </Alert>
-      <ContactsList contacts={contacts} />
-    </>
+
+      <div className={styles.alert}>
+        {alert ? <p>{alert}</p> : <p className="hidden">.</p>}
+      </div>
+      <ContactsList contacts={contacts} deleteHandler={deleteHandler} />
+    </div>
   );
 }
 
